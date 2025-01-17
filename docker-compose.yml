@@ -1,0 +1,42 @@
+services:
+
+  # provider part
+
+  atlasx-provider:
+    image: harbor.kubiat2.eu/moveid/atlas-gateway:latest
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./provider/vc-templates:/app/resources/vc-templates
+      - ./provider/hkv-example:/hkv-example
+    environment:
+      ATLAS_CONFIG_DOMAIN: ${PROVIDER_DOMAIN}
+      ATLAS_CONFIG_SERVICE_BASE_ADDRESS: https://${PROVIDER_DOMAIN}
+      ATLAS_CONFIG_CATALOGUE_REFRESH_RATE: 20
+      ATLAS_CONFIG_SELF_DESCRIPTION_REFRESH_RATE: 20
+      SERVICEOFFERINGS_SERVICES_0_NAME: helloservice
+      SERVICEOFFERINGS_SERVICES_0_URL: http://client/hello.txt
+      POLICIES_CUSTOMPOLICY_ADMINROLEPOLICY_LEGAL-REGISTRATION-NUMBER: "HRB 0815"
+      POLICIES_CUSTOMPOLICY_ADMINROLEPOLICY_ROLE-TO-GRANT-ACCESS: ADMIN
+      ROUTES_HELLOSERVICE_0: adminrolepolicy
+  client:
+    image: nginx:stable-alpine3.17-slim
+    ports:
+      - "8080:80"
+    volumes:
+      - ./provider/data:/usr/share/nginx/html
+
+  # consumer part
+
+  atlasx-consumer:
+    image: harbor.kubiat2.eu/moveid/atlas-gateway:latest
+    ports:
+      - "8082:8080"
+    volumes:
+      - ./consumer/vc-templates:/app/resources/vc-templates
+      - ./consumer/hkv-example:/hkv-example
+    environment:
+      ATLAS_CONFIG_DOMAIN: ${CONSUMER_DOMAIN}
+      ATLAS_CONFIG_SERVICE_BASE_ADDRESS: https://${CONSUMER_DOMAIN}
+      ATLAS_CONFIG_CATALOGUE_REFRESH_RATE: 10
+      ATLAS_CONFIG_SELF_DESCRIPTION_REFRESH_RATE: 10
